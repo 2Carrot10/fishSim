@@ -1,15 +1,13 @@
 from PIL import Image, ImageTk, ImageDraw
 import tkinter as tk
 import random
-from objs import Food, Fish, Pred, Effect
+from objs import Food, Fish, EvilFish, Effect
 import math
 window = tk.Tk()
-amountOfFishGood = 70
+amountOfFishGood = 40
 amountOfFoodGood = 4
 amountOfBadThingsGood = 1
 timeStep = 30
-splatter = Image.open("assets/splatter.png").convert("RGBA").resize((128, 128), Image.Resampling.NEAREST)
-splatter.apply_transparency()
 timeLastInteract = 0
 timeUntilAuto = 10
 
@@ -23,8 +21,6 @@ timeUntilAuto = 10
 # Food.Food(x, y, 0, canvas)
 stuff = []
 effects = []
-fishLeft = Image.open("assets/fishLeft.png")
-fishRight = Image.open("assets/fishRight.png")
 
 canvas = tk.Canvas(window, bg="black")
 
@@ -35,7 +31,7 @@ def dropFood(event):
 
 def spawnFish(event):
     timeLastinteract = 0
-    stuff.append(Pred.Pred(event.x, event.y, random.random() * math.pi * 2, canvas, window))
+    stuff.append(EvilFish.EvilFish(event.x, event.y, random.random() * math.pi * 2, canvas, window))
 
 
 # canvas.bind("<B1-Motion>", paint)
@@ -66,7 +62,7 @@ def frame(Ca):
         val.step(canvas, stuff, timeStep / 1000)  # timeStep is in seconds
         if isinstance(val, Fish.Fish):
             fishes += 1
-        if isinstance(val, Pred.Pred):
+        if isinstance(val, EvilFish.EvilFish):
             preds += 1
         if isinstance(val, Food.Food):
             foods += 1
@@ -107,7 +103,7 @@ def frame(Ca):
                     yPos = canvas.winfo_height() + distFromEdge
                 xPos = random.random() * canvas.winfo_width()
 
-            stuff.append(Pred.Pred(xPos, yPos, 0, canvas, window))
+            stuff.append(EvilFish.EvilFish(xPos, yPos, 0, canvas, window))
     for val in stuff:
         if val.toDestroy:
             stuff.remove(val)

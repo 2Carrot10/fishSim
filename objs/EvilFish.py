@@ -18,10 +18,12 @@ fish = ImageTk.PhotoImage(
 )
 """
 
-class Pred(Boid.Boid):
+class EvilFish(Boid.Boid):
     timeCount = timeToSwitch * random.random()
     def chooseMove(self, canvas, others, timeStep):
         ave = list((0, 0))
+        distInFrontCheck = 100
+        posInFront = list((self.x + math.cos(self.rot) * distInFrontCheck, self.y + math.sin(self.rot) * distInFrontCheck))
         # ave[0] -= min((self.x - canvas.winfo_width() - 100) / 100, 0)
         # ave[0] -= min((100 - self.x) / 100, 0)
         distFromEdgeToBeBad = 150
@@ -36,33 +38,25 @@ class Pred(Boid.Boid):
             if not self == val:
                 intDif = list((val.x - self.x, val.y - self.y))
                 dist = math.sqrt(intDif[0]**2 + intDif[1]**2)
+                intDifFront = (val.x - posInFront[0], val.y - posInFront[1])
+                distFront = math.sqrt(intDifFront[0]**2 + intDifFront[1]**2)
+                if dist < 5:
+                    continue
                 dif = list((0, 0))
                 dif[0] = intDif[0]/math.hypot(intDif[0], intDif[1])
                 dif[1] = intDif[1]/math.hypot(intDif[0], intDif[1])
 
                 if isinstance(val, Fish.Fish):
-                    print(dist)
-                    if dist > 600:
+                    if distFront > 600:
                         continue
                     if dist < 40:
                         val.toDestroy = True
                         val.toExplode = True
                     mult = 3
-                    if dist < 200:
-                        mult = 2
-                    ave[0] += dif[0] * mult
-                    ave[1] += dif[1] * mult
-                elif isinstance(val, Pred):
-                    if dist > 300:
-                        continue
-                    fishInArea += 1
-                    fishLocation[0] += val.x
-                    fishLocation[1] += val.y
-                    ave[0] += math.cos(val.rot) / 100
-                    ave[1] += math.sin(val.rot) / 100
-                    mult = (dist - 150) / 16620
-                    if mult < 0:
-                        mult *= 30
+                    if distFront < 200:
+                        mult = 1.4
+                    if distFront < 25:
+                        mult = 3
                     ave[0] += dif[0] * mult
                     ave[1] += dif[1] * mult
             if fishInArea > 5:

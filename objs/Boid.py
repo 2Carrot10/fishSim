@@ -18,7 +18,6 @@ class Boid(Obj.Obj):
                 delta_rot, rotAllowed), -rotAllowed)
             self.rot += clamped_delta_rot
 
-
         self.x += math.cos(self.rot) * self.speed * timeStep
         self.y += math.sin(self.rot) * self.speed * timeStep
         #canvas.moveto(self.obj, self.x, self.y)

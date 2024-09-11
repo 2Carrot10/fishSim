@@ -1,28 +1,25 @@
 from objs import Boid
 from objs import Food
-from PIL import Image, ImageTk
-import tkinter as tk
 import math
 import random
-from objs import Pred
+from objs import EvilFish
 timeToSwitch = .15
-#root = tk.Tk()
-"""
-fish = ImageTk.PhotoImage(
-    Image.open(
-        "assets/fishForward.png").convert("RGBA").resize(
-        (128, 128),
-        Image.Resampling.NEAREST
-    )
-)
-"""
+dashCooldown = 5
+dashSpeedAdd = 200
+dashDurationTotal = .2
+dashPrepLength = .14
 
 class Fish(Boid.Boid):
     cycle = 0
-    timeCount = timeToSwitch * random.random()
+
     def chooseMove(self, canvas, others, timeStep):
         ave = list((0, 0))
         distFromEdgeToBeBad = 150
+
+
+        distInFrontCheck = 140
+        posInFront = list((self.x + math.cos(self.rot) * distInFrontCheck, self.y + math.sin(self.rot) * distInFrontCheck))
+
         ave[1] += max(distFromEdgeToBeBad - self.y, 0) * 100
         ave[1] -= max(distFromEdgeToBeBad - (canvas.winfo_height() - self.y), 0) * 100
 
@@ -39,21 +36,28 @@ class Fish(Boid.Boid):
                 dif[0] = intDif[0]/math.hypot(intDif[0], intDif[1])
                 dif[1] = intDif[1]/math.hypot(intDif[0], intDif[1])
 
+                intDifFront = (val.x - posInFront[0], val.y - posInFront[1])
+                distFront = math.sqrt(intDifFront[0]**2 + intDifFront[1]**2)
+
                 if isinstance(val, Food.Food):
+                    if distFront < 60:
+                        self.prepDash()
                     if dist > 600:
                         continue
                     if dist < 40:
-                        self.speed += 20
+                        self.speed += 5
                         val.toDestroy = True
                         val.toExplode = True
                     closestFood[0] = dif[0]
                     closestFood[1] = dif[1]
-                elif isinstance(val, Pred.Pred):
+                elif isinstance(val, EvilFish.EvilFish):
                     if dist > 1000:
                         continue
-                    mult = 1
+                    mult = 5000
                     ave[0] -= dif[0] * mult
                     ave[1] -= dif[1] * mult
+                    if dist < self.distanceToRunTolarence:
+                        self.prepDash()
                 elif isinstance(val, Fish):
                     if dist > 300:
                         continue
@@ -75,12 +79,51 @@ class Fish(Boid.Boid):
         return ave
 
     def __init__(self, x, y, rot, canvas, window):
-        self.size = 25
+        self.distanceToRunTolarence = 50 + random.random() * 3 * 50
+        self.dashCooldown = 0
+        self.baseSize = 25
+        self.size = self.baseSize
         self.width = 10
         self.rotSpeed = 1 * random.random() + 1
-        self.speed = 200 * random.random() + 100
+        self.baseSpeed = 200 * random.random() + 100
+        self.speed = self.baseSpeed
+        self.isDashing = False
+        self.isPrepingDash = False
+        self.dashDuration = 0
+        self.dashPrepTimeLeft = 0
         color = "white"
         Boid.Boid.__init__(self, x, y, rot, color, canvas)
+
+    def otherThingToDo(self, canvas, timeStep):
+        self.dashDuration -= timeStep
+        self.dashCooldown -= timeStep
+        self.dashPrepTimeLeft -= timeStep
+
+        if self.dashPrepTimeLeft <= 0 and self.isPrepingDash:
+            self.dash()
+
+        if self.dashDuration <= 0:
+            self.isDashing = False
+        if self.isDashing:
+            self.speed = self.baseSpeed + dashSpeedAdd
+        else:
+            b = .2
+            self.speed = self.baseSpeed * b + self.speed * (1-b)
+        idealSize = self.baseSize + self.speed / 30 - (15 if self.isPrepingDash else 0)
+        a = .3
+        self.size = self.size * a + idealSize * (1 - a)
+
+    def prepDash(self):
+        if not self.isPrepingDash:
+            if self.dashCooldown < 0:
+                self.dashPrepTimeLeft = dashPrepLength
+                self.isPrepingDash = True
+
+    def dash(self):
+        self.isPrepingDash = False
+        self.dashDuration = dashDurationTotal
+        self.dashCooldown = dashCooldown
+        self.isDashing = True
 
     def render(self, canvas, timeStep):
         canvas.moveto(self.obj, self.x - self.size / 2, self.y - self.size / 2)
