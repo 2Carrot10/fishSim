@@ -45,6 +45,7 @@ canvas.move(ball, 20, 1)
 """
 canvas.pack(fill="both", expand=True)
 
+
 def frame(Ca):
     global timeLastInteract
     timeLastInteract += timeStep / 1000
@@ -112,6 +113,7 @@ def frame(Ca):
             if val.toExplode:
                 for x in range(6):
                     effects.append(Effect.Effect(val.color, val.x, val.y, random.random() * 100, canvas, 1, 2, 1.02, math.cos(val.rot)*val.speed, math.sin(val.rot) * val.speed))
+
 
 def animation(Ca):
     frame(Ca)
