@@ -1,4 +1,3 @@
-from PIL import Image, ImageTk, ImageDraw
 import tkinter as tk
 import random
 from objs import Food, Fish, EvilFish, Effect

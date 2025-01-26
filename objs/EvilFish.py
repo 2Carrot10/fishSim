@@ -1,6 +1,5 @@
 from objs import Boid
 from objs import Fish 
-from PIL import Image, ImageTk
 import tkinter as tk
 import math
 import random
